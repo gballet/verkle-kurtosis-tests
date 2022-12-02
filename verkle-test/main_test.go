@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/kurtosis-tech/kurtosis-sdk/api/golang/core/kurtosis_core_rpc_api_bindings"
 	"math/big"
 	"sort"
 	"strings"
@@ -15,7 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/kurtosis-tech/kurtosis-sdk/api/golang/core/kurtosis_core_rpc_api_bindings"
 	"github.com/kurtosis-tech/kurtosis-sdk/api/golang/core/lib/enclaves"
 	"github.com/kurtosis-tech/kurtosis-sdk/api/golang/core/lib/services"
 	"github.com/kurtosis-tech/kurtosis-sdk/api/golang/engine/lib/kurtosis_context"
@@ -73,6 +73,8 @@ const (
 
 	retriesAttempts      = 20
 	retriesSleepDuration = 10 * time.Millisecond
+
+	newlineChar = "\n"
 )
 
 var (
@@ -430,7 +432,7 @@ func readStreamContentUntilClosed(responseLines chan *kurtosis_core_rpc_api_bind
 			instructions = append(instructions, responseLine.GetInstruction())
 		} else if responseLine.GetInstructionResult() != nil {
 			scriptOutput.WriteString(responseLine.GetInstructionResult().GetSerializedInstructionResult())
-			scriptOutput.WriteString("\n")
+			scriptOutput.WriteString(newlineChar)
 		} else if responseLine.GetError() != nil {
 			if responseLine.GetError().GetInterpretationError() != nil {
 				interpretationError = responseLine.GetError().GetInterpretationError()
