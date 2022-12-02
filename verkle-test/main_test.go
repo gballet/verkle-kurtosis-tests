@@ -28,17 +28,17 @@ import (
 This example will:
 1. Start an Ethereum network with `numParticipants` nodes
 2. Wait for all the nodes to be synced
-3. Partition the network into 2. Half of the nodes will be in partition 1, half will be in partition 2
-4. Wait for the block production to diverge in each partition
-5. Heal the partition and wait for all nodes to get back in sync
+3. Deploy a smart contract
+4. Wait for the block production to continue
+5. Assert that there was no forking
 
-This test demonstrate Ethereum-forking behaviour in Kurtosis.
+This test demonstrates basic Ethereum testnet behaviour in Kurtosis.
 */
 
 const (
 	logLevel = logrus.InfoLevel
 
-	testName              = "go-network-partitioning"
+	testName              = "go-ethereum-testnet-with-contract"
 	isPartitioningEnabled = true
 
 	nodeInfoPrefix = "NODES STATUS -- |"
@@ -50,7 +50,7 @@ const (
 
 	participantsPlaceholder = "{{participants_param}}"
 	//participantParam        = `{"elType":"geth","elImage":"ethereum/client-go:v1.10.25","clType":"lodestar","clImage":"chainsafe/lodestar:v1.1.0"}`
-	participantParam     = `{"el_client_type":"geth","el_client_image":"ethereum/client-go:v1.10.25","cl_client_type":"lighthouse","cl_client_image":"sigp/lighthouse:v3.1.2"}`
+	participantParam     = `{"el_client_type":"geth","el_client_image":"ethereum/client-go:v1.10.26","cl_client_type":"lighthouse","cl_client_image":"sigp/lighthouse:v3.3.0"}`
 	moduleParamsTemplate = `{
 	"launch_additional_services": false,
 	"participants": [
@@ -60,10 +60,6 @@ const (
 
 	minBlocksBeforeDeployment = 5
 	minBlocksAfterDeployment  = 5
-
-	firstPartition  = "partition0"
-	secondPartition = "partition1"
-	healedPartition = "pangea"
 
 	elNodeIdTemplate          = "el-client-%d"
 	clNodeBeaconIdTemplate    = "cl-client-%d-beacon"
@@ -78,16 +74,13 @@ const (
 )
 
 var (
-	unblockedPartitionConnection = enclaves.NewUnblockedPartitionConnection()
-	blockedPartitionConnection   = enclaves.NewBlockedPartitionConnection()
-
 	nodeIds    = make([]int, numParticipants)
 	idsToQuery = make([]services.ServiceID, numParticipants)
 
 	isTestInExecution bool
 )
 
-func TestNetworkPartitioning(t *testing.T) {
+func TestContractDeployment(t *testing.T) {
 	logrus.SetLevel(logLevel)
 	isTestInExecution = true
 	moduleParams := initNodeIdsAndRenderModuleParam()
